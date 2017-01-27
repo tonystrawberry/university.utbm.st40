@@ -48,6 +48,7 @@ function vjsub_OpeningFcn(hObject, eventdata, handles, varargin)
     handles.cameraFacesNumber = 1; % Counter for the number of faces by camera
     handles.cameraSubspaces = []; % Array containing subspaces of all faces by camera
     handles.cameraReferenceImages = []; % Array containing the reference images
+%     handles.cameraOriginalReferenceImages = []; % Array containing the original reference images
     handles.cameraFaceNames = {}; % Array containing the names of all faces taken by camera
     
     handles.video = videoinput('kinect', 1); % Creating a video input
@@ -115,7 +116,7 @@ end
 
 % --- Executes on button press in TrainingSelection.
 function TrainingSelection_Callback(hObject, eventdata, handles)    
-    switch handles.state
+    switch handles.state % state can be 'dataset' or 'm-file'
         case handles.TRAININGCODE.TRAININGDATASET
             folder_name = uigetdir;
             text_handle = handles.trainingTXT;
@@ -148,8 +149,6 @@ end
 % --- Executes during object creation, after setting all properties.
 function TrainingPopupMenu_CreateFcn(hObject, eventdata, handles)
 
-    % Hint: popupmenu controls usually have a white background on Windows.
-    %       See ISPC and COMPUTER.
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
@@ -157,13 +156,12 @@ function TrainingPopupMenu_CreateFcn(hObject, eventdata, handles)
 end
 
 % --- Executes on button press in TrainingCameraLoad.
-function TrainingCameraLoad_Callback(hObject, eventdata, handles)
-      
+function TrainingCameraLoad_Callback(hObject, eventdata, handles)      
     switch handles.state
         case handles.TRAININGCODE.TRAININGDATASET
 
             %% Get parameters
-            [dim, kP, sI, nP, lS, lC, tP] = getParameters(handles);
+            [dim, kP, sI, nP, lS, lC, tP, tTE] = getParameters(handles);
                         
             %% Delete double (replace old folder by new dataset from camera if same name)
             folder = 'C:\Users\Tony\Documents\MATLAB\FaceRecognitionSystem2016\ReferencesImages\';
@@ -177,6 +175,7 @@ function TrainingCameraLoad_Callback(hObject, eventdata, handles)
             %% Create new folders for new faces
             
             [handles, croppedImages] = createNewFolders(handles, croppedImages, folder);
+%             [handles, croppedImages] = createOriginalNewFolders(handles, croppedImages, ofolder);
                         
             %% Normalization of all the vectors
             for i = 1:size(croppedImages,2)
@@ -211,23 +210,26 @@ function TrainingAddFaceCamera_Callback(hObject, eventdata, handles)
     
     guidata(hObject, handles);
     handles.mode = 1; % mode = 1 when used for training ; mode = 2 when used for recognition/classification
+    
     %% Get parameters
-    [dim, kP, sI, nP, lS, lC, tP] = getParameters(handles);   
+    [dim, kP, sI, nP, lS, lC, tP, tTE] = getParameters(handles);   
     
     % Send the parameters
     
     setappdata(0, 'mode', 'train');
-    setappdata(0, 'nP', nP);
-    setappdata(0, 'tP', tP);
-    setappdata(0, 'lS', lS);
-    setappdata(0, 'lC', lC);
-    setappdata(0, 'sI', sI);
+    setappdata(0, 'nP', nP); % number of pictures
+    setappdata(0, 'tP', tP); % timer period
+    setappdata(0, 'lS', lS); % limit scale
+    setappdata(0, 'lC', lC); % limit clusters
+    setappdata(0, 'sI', sI); % size of image
+    setappdata(0, 'tTE', tTE); % tasks to execute (or number of frames to process)
     
     myCameraGUI; % display the camera GUI
      
     if ~isempty(getappdata(0, 'camFaceName'))   % getappdata(0, 'camSubspace') returns the subspace corresponding to the face 
         handles.cameraSubspaces{handles.cameraFacesNumber} = double(getappdata(0, 'camSubspace'));
         handles.cameraReferenceImages{handles.cameraFacesNumber} = getappdata(0, 'camReferenceImage');
+%         handles.cameraOriginalReferenceImages{handles.cameraFacesNumber} = getappdata(0, 'camOriginalReferenceImage');
         handles.cameraFaceNames{handles.cameraFacesNumber} = getappdata(0, 'camFaceName');
         
         % Dynamically create a textbox, set the text and position
@@ -245,6 +247,9 @@ function TrainingReset_Callback(hObject, eventdata, handles)
         delete(handles.cameraTextBoxes{i});
     end
     
+    handles.cameraSubspaces = [];
+    handles.cameraReferenceImages = [];
+%     handles.cameraOriginalReferenceImages = [];
     handles.cameraSubspaces = [];
     handles.cameraFacesNumber = 1;
     handles.cameraTextBoxesGap = 0;  
@@ -275,6 +280,18 @@ function RecogPopupMenu_Callback(hObject, eventdata, handles)
             setappdata(0, 'mode', 'recog');
             setappdata(0, 'handles', handles);
             
+            [dim, kP, sI, nP, lS, lC, tP, tTE] = getParameters(handles);
+            
+            % Send the parameters
+    
+            setappdata(0, 'nP', nP); % number of pictures
+            setappdata(0, 'tP', tP); % timer period
+            setappdata(0, 'lS', lS); % limit scale
+            setappdata(0, 'lC', lC); % limit clusters
+            setappdata(0, 'sI', sI); % size of image
+            setappdata(0, 'tTE', tTE); % tasks to execute (or number of frames to process)
+
+            
             % Display the camera GUI and retrieve the photo
             myCameraGUI;
             handles.selected = getappdata(0, 'inputPhoto');
@@ -287,8 +304,6 @@ end
 % --- Executes during object creation, after setting all properties.
 function RecogPopupMenu_CreateFcn(hObject, eventdata, handles)
 
-    % Hint: popupmenu controls usually have a white background on Windows.
-    %       See ISPC and COMPUTER.
     if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
         set(hObject,'BackgroundColor','white');
     end
@@ -309,7 +324,7 @@ end
 function RecogPerform_Callback(hObject, eventdata, handles)
 
     %% Get parameters
-    [dim, kP, sI, nP, lS, lC, tP] = getParameters(handles);   
+    [dim, kP, sI, nP, lS, lC, tP, tTE] = getParameters(handles);   
 
     wishedDim = 1; % wishedDim is 1 because 1 vector
 
@@ -367,6 +382,8 @@ function RecogPerform_Callback(hObject, eventdata, handles)
             %% Save...
             [referenceImages, subspaceOrthogonalizedNormalized, projMatrix, faceNames, handles] = presave(handles, handles.croppedImages);
             folder = strcat('C:\Users\Tony\Documents\MATLAB\FaceRecognitionSystem2016\ReferencesImages', '\',handles.faceNames{I});
+%             ofolder = strcat('C:\Users\Tony\Documents\MATLAB\FaceRecognitionSystem2016\OriginalReferencesImages', '\',handles.faceNames{I});
+
             for i = 1:1000
                 if exist(strcat(folder, '\', num2str(i), '.jpg'), 'file') == 0
                     imwrite(uint8(image), strcat(folder, '\', num2str(i), '.jpg'), 'jpg'); break;
@@ -388,8 +405,7 @@ end
 % --- Executes on button press in apply.
 function apply_Callback(hObject, eventdata, handles)
 
-    storeParameters(handles);
- 
+    handles = storeParameters(handles);
     guidata(hObject, handles);
 
 end
@@ -398,6 +414,8 @@ end
 function vjsub_CloseRequestFcn(hObject, eventdata, handles)
 
     % Hint: delete(hObject) closes the figure
+    
+    % delete all application-defined data
     rmappdata(0, 'mode');
     rmappdata(0, 'handles');
     rmappdata(0, 'mode');
@@ -406,6 +424,7 @@ function vjsub_CloseRequestFcn(hObject, eventdata, handles)
     rmappdata(0, 'lS');
     rmappdata(0, 'lC');
     rmappdata(0, 'sI');
+    rmappdata(0, 'tTE');
     
     delete(hObject);
     delete(imaqfind);
@@ -464,6 +483,95 @@ end
 % --- Executes during object creation, after setting all properties.
 function param7_CreateFcn(hObject, eventdata, handles)
 
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+end
+
+
+
+function param1_Callback(hObject, eventdata, handles)
+% hObject    handle to edit10 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit10 as text
+%        str2double(get(hObject,'String')) returns contents of edit10 as a double
+end
+
+function param2_Callback(hObject, eventdata, handles)
+% hObject    handle to edit10 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit10 as text
+%        str2double(get(hObject,'String')) returns contents of edit10 as a double
+end
+
+function param3_Callback(hObject, eventdata, handles)
+% hObject    handle to edit10 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit10 as text
+%        str2double(get(hObject,'String')) returns contents of edit10 as a double
+end
+
+function param4_Callback(hObject, eventdata, handles)
+% hObject    handle to edit10 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit10 as text
+%        str2double(get(hObject,'String')) returns contents of edit10 as a double
+end
+
+function param5_Callback(hObject, eventdata, handles)
+% hObject    handle to edit10 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit10 as text
+%        str2double(get(hObject,'String')) returns contents of edit10 as a double
+end
+
+function param6_Callback(hObject, eventdata, handles)
+% hObject    handle to edit10 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit10 as text
+%        str2double(get(hObject,'String')) returns contents of edit10 as a double
+end
+
+function param7_Callback(hObject, eventdata, handles)
+% hObject    handle to edit10 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit10 as text
+%        str2double(get(hObject,'String')) returns contents of edit10 as a double
+end
+
+
+
+function param8_Callback(hObject, eventdata, handles)
+% hObject    handle to param8 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of param8 as text
+%        str2double(get(hObject,'String')) returns contents of param8 as a double
+end
+
+% --- Executes during object creation, after setting all properties.
+function param8_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to param8 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end

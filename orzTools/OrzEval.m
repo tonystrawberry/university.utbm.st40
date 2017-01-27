@@ -1,4 +1,3 @@
-
 classdef OrzEval
     properties (SetAccess = public)
         ER;
@@ -19,21 +18,21 @@ classdef OrzEval
     methods
         function OB = OrzEval(VAL, Label, varargin)
 %function OB = OrzEval(VAL, Label, varargin)
-% VAL:      —ÞŽ—“x‚à‚µ‚­‚Í”ñ—ÞŽ—“xi‹——£j‚ª“ü‚Á‚½s—ñA‚à‚µ‚­‚ÍsƒxƒNƒgƒ‹
-%           VAL‚ªs—ñ‚Ìê‡A‘½ƒNƒ‰ƒX–â‘èi‚QƒNƒ‰ƒXˆÈãj‚Æ”»’f
-%           VAL‚ªsƒxƒNƒgƒ‹‚Ìê‡A‚PƒNƒ‰ƒX‚Æ”»’fËER‚ðŒvŽZ‚µ‚È‚¢
-% Label:    VAL‚Ì—ñ”‚Æ“¯‚¶ƒTƒCƒY‚ÌsƒxƒNƒgƒ‹
-%           VAL‚Ì³‰ðƒ‰ƒxƒ‹‚ð•ÛŽ
-%           ‘½ƒNƒ‰ƒX–â‘è‚Ìê‡A‚P`ƒNƒ‰ƒX”‚Ì’l
-%           ‚PƒNƒ‰ƒX–â‘è‚Ìê‡A‚PiPositivej‚Æ‚OiNegativej
-% ‘æŽOˆø”F VAL‚Ì’l‚ª—ÞŽ—“x‚©”ñ—ÞŽ—“xi‹——£j‚ðŒˆ’è‚·‚é
-%           ƒfƒtƒHƒ‹ƒg‚Å‚ÍA—ÞŽ—“x
-%           •¶Žš'D'‚ª‘æŽOˆø”‚É“ü—Í‚³‚ê‚½ê‡A”ñ—ÞŽ—“xi‹——£j‚Æ‚µ‚ÄŒvŽZ
+% VAL:      —ÞŽ—“x‚à‚µ‚­‚Í”ñ—ÞŽ—“x?i‹——£?j‚ª“ü‚Á‚½?s—ñ?A‚à‚µ‚­‚Í?sƒxƒNƒgƒ‹
+%           VAL‚ª?s—ñ‚Ì?ê?‡?A‘½ƒNƒ‰ƒX–â‘è?i‚QƒNƒ‰ƒXˆÈ?ã?j‚Æ”»’f
+%           VAL‚ª?sƒxƒNƒgƒ‹‚Ì?ê?‡?A‚PƒNƒ‰ƒX‚Æ”»’f?ËER‚ðŒvŽZ‚µ‚È‚¢
+% Label:    VAL‚Ì—ñ?”‚Æ“¯‚¶ƒTƒCƒY‚Ì?sƒxƒNƒgƒ‹
+%           VAL‚Ì?³‰ðƒ‰ƒxƒ‹‚ð•ÛŽ?
+%           ‘½ƒNƒ‰ƒX–â‘è‚Ì?ê?‡?A‚P?`ƒNƒ‰ƒX?”‚Ì’l
+%           ‚PƒNƒ‰ƒX–â‘è‚Ì?ê?‡?A‚P?iPositive?j‚Æ‚O?iNegative?j
+% ‘æŽOˆø?”?F VAL‚Ì’l‚ª—ÞŽ—“x‚©”ñ—ÞŽ—“x?i‹——£?j‚ðŒˆ’è‚·‚é
+%           ƒfƒtƒHƒ‹ƒg‚Å‚Í?A—ÞŽ—“x
+%           •¶Žš'D'‚ª‘æŽOˆø?”‚É“ü—Í‚³‚ê‚½?ê?‡?A”ñ—ÞŽ—“x?i‹——£?j‚Æ‚µ‚ÄŒvŽZ
 %           
-% PlotEERF False Reject Rate‚ÆFalse Alarm  Rate‚ðFigure(10)‚É•`‰æ
-%           ˆø”‚É‚æ‚èA”Ô†‚ð•ÏX‰Â”\
-% PlotROCF ROC curve‚ðFigure(100)‚É•`‰æ
-%           ˆø”‚É‚æ‚èA”Ô†‚ð•ÏX‰Â”\
+% PlotEER?F False Reject Rate‚ÆFalse Alarm  Rate‚ðFigure(10)‚É•`‰æ
+%           ˆø?”‚É‚æ‚è?A”Ô?†‚ð•Ï?X‰Â”\
+% PlotROC?F ROC curve‚ðFigure(100)‚É•`‰æ
+%           ˆø?”‚É‚æ‚è?A”Ô?†‚ð•Ï?X‰Â”\
             
             VAL=VAL(:,:);
             % —ÞŽ—“x‚©”ñ—ÞŽ—“x‚©
